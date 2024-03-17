@@ -21,6 +21,9 @@ namespace simulation {
 			mass_b.fixed = false;
 			spring.mass_a = &mass_a;
 			spring.mass_b = &mass_b;
+            spring.rest_l = 5.f;
+            spring.k_s = 1.f;
+            spring.k_d = 0.1f;
 			// Reset Dynamic elements
 			reset();
 
@@ -38,20 +41,26 @@ namespace simulation {
 			//This model can start vertical and be just a spring in the y direction only (like currently set up)
 		}
 
-		void MassOnSpringModel::step(float dt) {
-			//TODO: Just a moving mass, need to modify this to actually use spring
-			mass_b.p += mass_b.v * dt;
-			if (mass_b.p.y < -7.f) {
-				mass_b.p.y = -7.f;
-				mass_b.v = { 0.f, 0.2f,0.f };
-			}
-			else if (mass_b.p.y > -3.f) {
-				mass_b.p.y = -3.f;
-				mass_b.v = { 0.f, -0.2f ,0.f };
-			}
-		}
+//		void MassOnSpringModel::step(float dt) {
+//			//TODO: Just a moving mass, need to modify this to actually use spring
+//			mass_b.p += mass_b.v * dt;
+//			if (mass_b.p.y < -7.f) {
+//				mass_b.p.y = -7.f;
+//				mass_b.v = { 0.f, 0.2f,0.f };
+//			}
+//			else if (mass_b.p.y > -3.f) {
+//				mass_b.p.y = -3.f;
+//				mass_b.v = { 0.f, -0.2f ,0.f };
+//			}
+//		}
 
-		void MassOnSpringModel::render(const ModelViewContext& view) {
+        void MassOnSpringModel::step(float dt) {
+            mass_b.f = spring.force() * -1.f;
+            mass_b.integrate(dt);
+        }
+
+
+        void MassOnSpringModel::render(const ModelViewContext& view) {
 
 			//Add Mass render
 			givr::addInstance(mass_render, glm::translate(glm::mat4(1.f), mass_a.p));
