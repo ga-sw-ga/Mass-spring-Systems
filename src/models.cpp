@@ -83,17 +83,23 @@ namespace simulation {
 			, spring_style(givr::style::Colour(1.f, 0.f, 1.f))
 		{
 			//TODO: This chain should be at least ***10*** links long!
-			//Link up (Static elements)
-			masses.resize(3);
-			masses[0].fixed = true;
-			masses[1].fixed = false;
-			masses[2].fixed = false;
 
-			springs.resize(2);
-			springs[0].mass_a = &masses[0];
-			springs[0].mass_b = &masses[1];
-			springs[1].mass_a = &masses[1];
-			springs[1].mass_b = &masses[2];
+            int number_of_masses = 10, number_of_springs = number_of_masses - 1;
+			//Link up (Static elements)
+			masses.resize(number_of_masses);
+			masses[0].fixed = true;
+            for (int i = 1; i < number_of_masses; ++i) {
+                masses[i].fixed = false;
+            }
+
+			springs.resize(number_of_springs);
+            for (int i = 0; i < number_of_springs; ++i) {
+                springs[i].mass_a = &masses[i];
+                springs[i].mass_b = &masses[i + 1];
+                springs[i].k_s = 25.f;
+                springs[i].k_d = 1.f;
+                springs[i].rest_l = 5.f;
+            }
 			//Reset Dynamic elements
 			reset();
 
@@ -104,17 +110,30 @@ namespace simulation {
 
 		void ChainPendulumModel::reset() {
 			//As you add quantities to the primatives, they should be set here.
-			masses[0].p = { 0.f,0.f,0.f };
-			masses[0].v = { 0.f,0.f,0.f }; // Fixed anyway so doesnt matter if implemented correctly
-			masses[1].p = { 5.f,0.f,0.f };
-			masses[1].v = { 0.f,0.f,0.f };
-			masses[2].p = { 10.f,0.f,0.f };
-			masses[2].v = { 0.f,0.f,0.f };
+            for (int i = 0; i < masses.size(); ++i) {
+                masses[i].p = {(float)i * 5.f,0.f,0.f };
+                masses[i].v = {0.f, 0.f, 0.f};
+            }
 			//The model should start non-vertical so we can see swaying action
 		}
 
 		void ChainPendulumModel::step(float dt) {
 			//TODO: Complete the Chain Pendulum step
+            //Calculating the forces
+            g = glm::vec3(0.f, -1.f * imgui_panel::gravity, 0.f);
+
+            for (int i = 0; i < masses.size(); ++i) {
+                masses[i].f = masses[i].m * g;
+            }
+            for (int i = 0; i < springs.size(); ++i) {
+                springs[i].mass_a->f += springs[i].force_a();
+                springs[i].mass_b->f += springs[i].force_b();
+            }
+
+            //Integration
+            for (int i = 0; i < masses.size(); ++i) {
+                masses[i].integrate(dt);
+            }
 		}
 
 		void ChainPendulumModel::render(const ModelViewContext& view) {
