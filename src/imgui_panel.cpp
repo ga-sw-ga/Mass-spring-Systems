@@ -7,6 +7,8 @@ namespace imgui_panel {
 	bool reset_view = false;
 	int number_of_iterations_per_frame = 1;
 
+    float gravity = 9.81f;
+
 	//Simulation settings
 	ModelType selected_model_type = ModelType::MassOnSpring;
 	std::map<ModelType, const char*> type_to_name_map = {
@@ -30,6 +32,7 @@ namespace imgui_panel {
 			ImGui::ColorEdit3("Clear color", (float*)&clear_color);
 			reset_view = ImGui::Button("Reset View");
 			ImGui::SliderInt("Iterations Per Frame", &number_of_iterations_per_frame, 1, 100);
+            ImGui::SliderFloat("Gravity Acceleration", &gravity, 0.0f, 20.0f);
 
 			ImGui::Spacing();
 			ImGui::Separator();

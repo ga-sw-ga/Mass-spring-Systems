@@ -5,6 +5,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "imgui_panel.hpp"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/compatibility.hpp> // lerp
@@ -29,7 +30,18 @@ namespace simulation {
                     p += v * dt;
                 }
             }
-		};
+
+            // Verlet Integration (For using when necessary)
+//            void integrate(float dt) {
+//                if (!fixed) {
+//                    glm::vec3 a = f / m;
+//                    glm::vec3 prevP = p;
+//                    p += (v + a * dt * 0.5f) * dt;
+//                    v = (p - prevP) / dt;
+//                }
+//            }
+
+        };
 
 		//Spring connections used in all simulations
 		struct Spring {
@@ -47,13 +59,17 @@ namespace simulation {
             }
 
             // Function to calculate spring force (applied on mass a)
-            glm::vec3 force() const {
+            glm::vec3 force_a() const {
                 glm::vec3 delta_p = mass_b->p - mass_a->p;
                 float current_l = glm::length(delta_p);
                 float displacement = current_l - rest_l;
                 glm::vec3 force = k_s * displacement * glm::normalize(delta_p);
                 glm::vec3 damping_force = k_d * (mass_a->v - mass_b->v);
                 return force - damping_force;
+            }
+
+            glm::vec3 force_b() const {
+                return force_a() * -1.f;
             }
 		};
 

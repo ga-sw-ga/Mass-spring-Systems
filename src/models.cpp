@@ -1,4 +1,5 @@
 #include "models.hpp"
+#include "imgui_panel.hpp"
 
 namespace simulation {
 	namespace primatives {
@@ -37,25 +38,15 @@ namespace simulation {
 			mass_a.p = { 0.f,0.f,0.f };
 			mass_a.v = { 0.f,0.f,0.f }; // Fixed anyway so doesnt matter if implemented correctly
 			mass_b.p = { 0.f,-5.f,0.f };
-			mass_b.v = { 0.f,-1.f,0.f };
+			mass_b.v = { 0.f,-3.f,0.f };
 			//This model can start vertical and be just a spring in the y direction only (like currently set up)
 		}
 
-//		void MassOnSpringModel::step(float dt) {
-//			//TODO: Just a moving mass, need to modify this to actually use spring
-//			mass_b.p += mass_b.v * dt;
-//			if (mass_b.p.y < -7.f) {
-//				mass_b.p.y = -7.f;
-//				mass_b.v = { 0.f, 0.2f,0.f };
-//			}
-//			else if (mass_b.p.y > -3.f) {
-//				mass_b.p.y = -3.f;
-//				mass_b.v = { 0.f, -0.2f ,0.f };
-//			}
-//		}
 
         void MassOnSpringModel::step(float dt) {
-            mass_b.f = spring.force() * -1.f;
+            g = glm::vec3(0.f, -1.f * imgui_panel::gravity, 0.f);
+
+            mass_b.f = spring.force_b() + mass_b.m * g;
             mass_b.integrate(dt);
         }
 

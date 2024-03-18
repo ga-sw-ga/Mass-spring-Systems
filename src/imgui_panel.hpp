@@ -10,6 +10,8 @@ namespace imgui_panel {
 	extern bool reset_view;
 	extern int number_of_iterations_per_frame;
 
+    extern float gravity;
+
 	//Selection Definition
 	enum class ModelType {
 		MassOnSpring,	//Part 1
