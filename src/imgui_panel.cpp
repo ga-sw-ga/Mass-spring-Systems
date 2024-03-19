@@ -14,7 +14,7 @@ namespace imgui_panel {
 	std::map<ModelType, const char*> type_to_name_map = {
 		  {ModelType::MassOnSpring,  "Mass On Spring"}
 		, {ModelType::ChainPendulum, "Chain Pendulum"}
-		//, {ModelType::CubeOfJelly,   "Cube Of Jelly"} // UNCOMMENT THIS WHEN IMPLEMENTED
+		, {ModelType::CubeOfJelly,   "Cube Of Jelly"} // UNCOMMENT THIS WHEN IMPLEMENTED
 		//, {ModelType::HangingCloth,  "Hanging Cloth"} // UNCOMMENT THIS WHEN IMPLEMENTED
 	};
 
