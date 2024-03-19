@@ -348,5 +348,143 @@ namespace simulation {
             givr::style::draw(mass_render, view);
             givr::style::draw(spring_render, view);
         }
+
+        //////////////////////////////////////////////////
+        ////           HangingClothModel             ////----------------------------------------------------------
+        //////////////////////////////////////////////////
+
+        HangingClothModel::HangingClothModel()
+                : mass_geometry(givr::geometry::Radius(0.2f))
+                , mass_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f))
+                , spring_geometry()
+                , spring_style(givr::style::Colour(1.f, 0.f, 1.f))
+        {
+
+            //Initializing masses and springs
+            int number_of_springs;
+            float k_d = 0.5f, k_s = 5000.f;
+
+            masses.resize(width + 1);
+            for (int x = 0; x <= width; ++x) {
+                masses[x].resize(height + 1);
+                for (int y = 0; y <= height; ++y) {
+                    masses[x][y].p = glm::vec3((width * -0.5f) + x, 0.f, (height * -0.5f) + y);
+                }
+            }
+            masses[0][0].fixed = true;
+            masses[width][0].fixed = true;
+
+            number_of_springs = width * height * 4 + width + height;
+            springs.resize(number_of_springs);
+            int spring_index = 0;
+            for (int x = 0; x <= width; ++x) {
+                for (int y = 0; y <= height; ++y) {
+                    for (int dx = 0; dx <= 1; ++dx) {
+                        for (int dy = 0; dy <= 1; ++dy) {
+                            int xa, ya, xb, yb;
+                            if (dx == 0 && dy == 0) {
+                                xa = x + 1;
+                                ya = y;
+                                xb = x;
+                                yb = y + 1;
+                            }
+                            else {
+                                xa = x;
+                                ya = y;
+                                xb = x + dx;
+                                yb = y + dy;
+                            }
+                            if (xa <= width && xb <= width && ya <= height && yb <= height) {
+                                springs[spring_index].mass_a = &masses[xa][ya];
+                                springs[spring_index].mass_b = &masses[xb][yb];
+                                springs[spring_index].rest_l = glm::distance(springs[spring_index].mass_a->p, springs[spring_index].mass_b->p);
+                                springs[spring_index].k_s = k_s;
+                                springs[spring_index].k_d = k_d;
+//                                std::cout << xa << ", " << ya << " -> " << xb << ", " << yb << ": " << springs[spring_index].rest_l << "\n";
+                                spring_index++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            //Reset Dynamic elements
+            reset();
+
+            // Render
+            mass_render = givr::createInstancedRenderable(mass_geometry, mass_style);
+            spring_render = givr::createRenderable(spring_geometry, spring_style);
+        }
+
+        void HangingClothModel::reset() {
+            for (int x = 0; x <= width; ++x) {
+                for (int y = 0; y <= height; ++y) {
+                    masses[x][y].p = glm::vec3((width * -0.5f) + x, 0.f, (height * -0.5f) + y);
+                }
+            }
+        }
+
+        void HangingClothModel::step(float dt) {
+            g = glm::vec3(0.f, -1.f * imgui_panel::gravity, 0.f);
+
+            for (int x = 0; x < masses.size(); ++x) {
+                for (int y = 0; y < masses[x].size(); ++y) {
+                    masses[x][y].f = masses[x][y].m * g;
+                }
+            }
+
+            for (int i = 0; i < springs.size(); ++i) {
+                springs[i].mass_a->f += springs[i].force_a();
+                springs[i].mass_b->f += springs[i].force_b();
+            }
+
+            // Handling collisions
+//            float ground_height = -1.5f, ground_k_s = 100000.f, ground_k_d = 0.4f;
+//            for (int x = 0; x < masses.size(); ++x) {
+//                for (int y = 0; y < masses[x].size(); ++y) {
+//                    for (int z = 0; z < masses[x][y].size(); ++z) {
+//                        if (masses[x][y][z].p[1] < ground_height) {
+//                            float s_f = (ground_height - masses[x][y][z].p[1]) * ground_k_s;
+//                            float d_f = -1.f * masses[x][y][z].v[1] * ground_k_d;
+//                            masses[x][y][z].f += glm::vec3(0.f, s_f + d_f, 0.f);
+//                        }
+//                    }
+//                }
+//            }
+
+            //Integration
+            for (int x = 0; x < masses.size(); ++x) {
+                for (int y = 0; y < masses[x].size(); ++y) {
+                    masses[x][y].integrate(dt);
+                }
+            }
+        }
+
+        void HangingClothModel::render(const ModelViewContext& view) {
+
+            //Add Mass render
+            for (const auto& row : masses) {
+                for (const auto& mass : row) {
+                    givr::addInstance(mass_render, glm::translate(glm::mat4(1.f), mass.p));
+                }
+            }
+
+
+            //Clear and add springs
+            spring_geometry.segments().clear();
+            for (const primatives::Spring& spring : springs) {
+                spring_geometry.push_back(
+                        givr::geometry::Line(
+                                givr::geometry::Point1(spring.mass_a->p),
+                                givr::geometry::Point2(spring.mass_b->p)
+                        )
+                );
+            }
+            givr::updateRenderable(spring_geometry, spring_style, spring_render);
+
+            //Render
+            givr::style::draw(mass_render, view);
+            givr::style::draw(spring_render, view);
+        }
 	} // namespace models
 } // namespace simulation

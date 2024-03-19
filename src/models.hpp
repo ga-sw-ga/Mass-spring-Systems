@@ -178,5 +178,36 @@ namespace simulation {
 		//class CubeOfJellyModel : public GenericModel {...}; //should be at least 4 in each direction
 		//class HangingClothModel : public GenericModel {...}; //should be at least 8 in each direction
 
-	} // namespace models
+        class HangingClothModel : public GenericModel {
+        public:
+            HangingClothModel();
+            void reset();
+            void step(float dt);
+            void render(const ModelViewContext& view);
+
+            //Simulation Constants (you can re-assign values here from imgui)
+            glm::vec3 g = { 0.f, -9.81f, 0.f };
+            int width = 24, height = 36;
+            float min_mass_distance = 1.f;
+
+        private:
+
+            //Simulation Parts
+            std::vector<std::vector<primatives::Mass>> masses;
+            std::vector<primatives::Spring> springs;
+
+            //Render
+            givr::geometry::Sphere mass_geometry;
+            givr::style::Phong mass_style;
+            givr::InstancedRenderContext<givr::geometry::Sphere, givr::style::Phong> mass_render;
+
+            givr::geometry::MultiLine spring_geometry;
+            givr::style::LineStyle spring_style;
+            givr::RenderContext<givr::geometry::MultiLine, givr::style::LineStyle> spring_render;
+        };
+        // TO-DO: Fully implements the last two using the scheme provided above
+        //class CubeOfJellyModel : public GenericModel {...}; //should be at least 4 in each direction
+        //class HangingClothModel : public GenericModel {...}; //should be at least 8 in each direction
+
+    } // namespace models
 } // namespace simulation

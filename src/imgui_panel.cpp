@@ -15,7 +15,7 @@ namespace imgui_panel {
 		  {ModelType::MassOnSpring,  "Mass On Spring"}
 		, {ModelType::ChainPendulum, "Chain Pendulum"}
 		, {ModelType::CubeOfJelly,   "Cube Of Jelly"} // UNCOMMENT THIS WHEN IMPLEMENTED
-		//, {ModelType::HangingCloth,  "Hanging Cloth"} // UNCOMMENT THIS WHEN IMPLEMENTED
+		, {ModelType::HangingCloth,  "Hanging Cloth"} // UNCOMMENT THIS WHEN IMPLEMENTED
 	};
 
 

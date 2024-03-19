@@ -87,6 +87,8 @@ int main(void) {
 			}break;
 			case imgui_panel::ModelType::HangingCloth: {
 				//TO-DO: Fill
+                model = std::make_unique<simulation::models::HangingClothModel>();
+                imgui_panel::dt_simulation = 0.0003f;
 			}break;
 			}
 		}
