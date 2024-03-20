@@ -83,12 +83,12 @@ int main(void) {
 			case imgui_panel::ModelType::CubeOfJelly: {
 				//TO-DO: Fill
                 model = std::make_unique<simulation::models::CubeOfJellyModel>();
-                imgui_panel::dt_simulation = 0.001f;
+                imgui_panel::dt_simulation = 0.003f;
 			}break;
 			case imgui_panel::ModelType::HangingCloth: {
 				//TO-DO: Fill
                 model = std::make_unique<simulation::models::HangingClothModel>();
-                imgui_panel::dt_simulation = 0.0003f;
+                imgui_panel::dt_simulation = 0.002f;
 			}break;
 			}
 		}

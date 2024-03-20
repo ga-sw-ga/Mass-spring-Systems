@@ -358,6 +358,8 @@ namespace simulation {
                 , mass_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f))
                 , spring_geometry()
                 , spring_style(givr::style::Colour(1.f, 0.f, 1.f))
+                , triangle_geometry()
+                , triangle_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f))
         {
 
             //Initializing masses and springs
@@ -414,6 +416,20 @@ namespace simulation {
             // Render
             mass_render = givr::createInstancedRenderable(mass_geometry, mass_style);
             spring_render = givr::createRenderable(spring_geometry, spring_style);
+            triangle_render = givr::createRenderable(triangle_geometry, triangle_style);
+
+            faces.resize(width * height * 2);
+            int face_index = 0;
+            for (int x = 0; x < width; ++x) {
+                for (int y = 0; y < height; ++y) {
+                    for (int d = 0; d < 2; ++d) {
+                        faces[face_index].mass_a = &masses[x + d][y + d];
+                        faces[face_index].mass_b = &masses[x + 1 - d][y + d];
+                        faces[face_index].mass_c = &masses[x + d][y + 1 - d];
+                        face_index++;
+                    }
+                }
+            }
         }
 
         void HangingClothModel::reset() {
@@ -460,7 +476,27 @@ namespace simulation {
             }
         }
 
+        // Calculate normals for each vertex of the cloth
+        // Assuming you have a function to calculate normals, replace this with your actual normal calculation method
+        glm::vec3 calculateNormal(primatives::Face face) {
+            return glm::normalize(glm::cross(face.mass_b->p - face.mass_a->p, face.mass_c->p - face.mass_a->p));
+        }
+
         void HangingClothModel::render(const ModelViewContext& view) {
+//            for (const primatives::Face& face : faces) {
+//                triangle_geometry = givr::geometry::Triangle(
+//                        givr::geometry::Point1(face.mass_a->p),
+//                        givr::geometry::Point2(face.mass_b->p),
+//                        givr::geometry::Point3(face.mass_c->p)
+//                );
+
+
+                // Update the renderable with the new triangle geometry
+//                givr::updateRenderable(triangle_geometry, triangle_style, triangle_render);
+
+                // Render the triangle
+//                givr::style::draw(triangle_render, view);
+//            }
 
             //Add Mass render
             for (const auto& row : masses) {
@@ -469,22 +505,36 @@ namespace simulation {
                 }
             }
 
+            triangle_geometry.triangles().clear();
 
-            //Clear and add springs
-            spring_geometry.segments().clear();
-            for (const primatives::Spring& spring : springs) {
-                spring_geometry.push_back(
-                        givr::geometry::Line(
-                                givr::geometry::Point1(spring.mass_a->p),
-                                givr::geometry::Point2(spring.mass_b->p)
-                        )
+            for (auto face: faces) {
+                triangle_geometry.push_back(
+                        givr::geometry::Triangle(givr::geometry::Point1(face.mass_a->p),
+                                                 givr::geometry::Point2(face.mass_b->p),
+                                                 givr::geometry::Point3(face.mass_c->p))
                 );
             }
-            givr::updateRenderable(spring_geometry, spring_style, spring_render);
 
-            //Render
-            givr::style::draw(mass_render, view);
-            givr::style::draw(spring_render, view);
+            givr::updateRenderable(triangle_geometry, triangle_style, triangle_render);
+
+//
+//
+//            //Clear and add springs
+//            spring_geometry.segments().clear();
+//            for (const primatives::Spring& spring : springs) {
+//                spring_geometry.push_back(
+//                        givr::geometry::Line(
+//                                givr::geometry::Point1(spring.mass_a->p),
+//                                givr::geometry::Point2(spring.mass_b->p)
+//                        )
+//                );
+//            }
+//            givr::updateRenderable(spring_geometry, spring_style, spring_render);
+//
+//            //Render
+//            givr::style::draw(mass_render, view);
+//            givr::style::draw(spring_render, view);
+            givr::style::draw(triangle_render, view);
         }
 	} // namespace models
 } // namespace simulation
