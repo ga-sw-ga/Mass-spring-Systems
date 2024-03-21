@@ -5,45 +5,43 @@
 #include "imgui_panel.hpp"
 
 namespace simulation {
-	namespace primatives {
-		//No functions for structs, yet...
-	}// namespace primatives
+    namespace primatives {
+        //No functions for structs, yet...
+    }// namespace primatives
 
-	namespace models {
-		//////////////////////////////////////////////////
-		////            MassOnSpringModel             ////----------------------------------------------------------
-		//////////////////////////////////////////////////
+    namespace models {
+        //////////////////////////////////////////////////
+        ////            MassOnSpringModel             ////----------------------------------------------------------
+        //////////////////////////////////////////////////
 
-		MassOnSpringModel::MassOnSpringModel()
-			: mass_geometry(givr::geometry::Radius(0.2f))
-			, mass_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f))
-			, spring_geometry()
-			, spring_style(givr::style::Colour(1.f, 0.f, 1.f))
-		{
-			// Link up (Static elements)
-			mass_a.fixed = true;
-			mass_b.fixed = false;
-			spring.mass_a = &mass_a;
-			spring.mass_b = &mass_b;
+        MassOnSpringModel::MassOnSpringModel()
+                : mass_geometry(givr::geometry::Radius(0.2f)),
+                  mass_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f)),
+                  spring_geometry(), spring_style(givr::style::Colour(1.f, 0.f, 1.f)) {
+            // Link up (Static elements)
+            mass_a.fixed = true;
+            mass_b.fixed = false;
+            spring.mass_a = &mass_a;
+            spring.mass_b = &mass_b;
             spring.rest_l = 5.f;
             spring.k_s = 1.f;
             spring.k_d = 0.1f;
-			// Reset Dynamic elements
-			reset();
+            // Reset Dynamic elements
+            reset();
 
-			// Render
-			mass_render = givr::createInstancedRenderable(mass_geometry, mass_style);
-			spring_render = givr::createRenderable(spring_geometry, spring_style);
-		}
+            // Render
+            mass_render = givr::createInstancedRenderable(mass_geometry, mass_style);
+            spring_render = givr::createRenderable(spring_geometry, spring_style);
+        }
 
-		void MassOnSpringModel::reset() {
-			//As you add quantities to the primatives, they should be set here.
-			mass_a.p = { 0.f,0.f,0.f };
-			mass_a.v = { 0.f,0.f,0.f }; // Fixed anyway so doesnt matter if implemented correctly
-			mass_b.p = { 0.f,-5.f,0.f };
-			mass_b.v = { 0.f,-3.f,0.f };
-			//This model can start vertical and be just a spring in the y direction only (like currently set up)
-		}
+        void MassOnSpringModel::reset() {
+            //As you add quantities to the primatives, they should be set here.
+            mass_a.p = {0.f, 0.f, 0.f};
+            mass_a.v = {0.f, 0.f, 0.f}; // Fixed anyway so doesnt matter if implemented correctly
+            mass_b.p = {0.f, -5.f, 0.f};
+            mass_b.v = {0.f, -3.f, 0.f};
+            //This model can start vertical and be just a spring in the y direction only (like currently set up)
+        }
 
 
         void MassOnSpringModel::step(float dt) {
@@ -54,48 +52,46 @@ namespace simulation {
         }
 
 
-        void MassOnSpringModel::render(const ModelViewContext& view) {
+        void MassOnSpringModel::render(const ModelViewContext &view) {
 
-			//Add Mass render
-			givr::addInstance(mass_render, glm::translate(glm::mat4(1.f), mass_a.p));
-			givr::addInstance(mass_render, glm::translate(glm::mat4(1.f), mass_b.p));
+            //Add Mass render
+            givr::addInstance(mass_render, glm::translate(glm::mat4(1.f), mass_a.p));
+            givr::addInstance(mass_render, glm::translate(glm::mat4(1.f), mass_b.p));
 
-			//Clear and add springs
-			spring_geometry.segments().clear();
-			spring_geometry.push_back(
-				givr::geometry::Line(
-					givr::geometry::Point1(spring.mass_a->p), 
-					givr::geometry::Point2(spring.mass_b->p)
-				)
-			);
-			givr::updateRenderable(spring_geometry, spring_style, spring_render);
+            //Clear and add springs
+            spring_geometry.segments().clear();
+            spring_geometry.push_back(
+                    givr::geometry::Line(
+                            givr::geometry::Point1(spring.mass_a->p),
+                            givr::geometry::Point2(spring.mass_b->p)
+                    )
+            );
+            givr::updateRenderable(spring_geometry, spring_style, spring_render);
 
-			//Render
-			givr::style::draw(mass_render, view);
-			givr::style::draw(spring_render, view);
-		}
+            //Render
+            givr::style::draw(mass_render, view);
+            givr::style::draw(spring_render, view);
+        }
 
-		//////////////////////////////////////////////////
-		////           ChainPendulumModel             ////----------------------------------------------------------
-		//////////////////////////////////////////////////
+        //////////////////////////////////////////////////
+        ////           ChainPendulumModel             ////----------------------------------------------------------
+        //////////////////////////////////////////////////
 
-		ChainPendulumModel::ChainPendulumModel() 
-			: mass_geometry(givr::geometry::Radius(0.2f))
-			, mass_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f))
-			, spring_geometry()
-			, spring_style(givr::style::Colour(1.f, 0.f, 1.f))
-		{
-			//TODO: This chain should be at least ***10*** links long!
+        ChainPendulumModel::ChainPendulumModel()
+                : mass_geometry(givr::geometry::Radius(0.2f)),
+                  mass_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f)),
+                  spring_geometry(), spring_style(givr::style::Colour(1.f, 0.f, 1.f)) {
+            //TODO: This chain should be at least ***10*** links long!
 
             int number_of_masses = 10, number_of_springs = number_of_masses - 1;
-			//Link up (Static elements)
-			masses.resize(number_of_masses);
-			masses[0].fixed = true;
+            //Link up (Static elements)
+            masses.resize(number_of_masses);
+            masses[0].fixed = true;
             for (int i = 1; i < number_of_masses; ++i) {
                 masses[i].fixed = false;
             }
 
-			springs.resize(number_of_springs);
+            springs.resize(number_of_springs);
             for (int i = 0; i < number_of_springs; ++i) {
                 springs[i].mass_a = &masses[i];
                 springs[i].mass_b = &masses[i + 1];
@@ -103,25 +99,25 @@ namespace simulation {
                 springs[i].k_d = 1.f;
                 springs[i].rest_l = 5.f;
             }
-			//Reset Dynamic elements
-			reset();
+            //Reset Dynamic elements
+            reset();
 
-			// Render
-			mass_render = givr::createInstancedRenderable(mass_geometry, mass_style);
-			spring_render = givr::createRenderable(spring_geometry, spring_style);
-		}
+            // Render
+            mass_render = givr::createInstancedRenderable(mass_geometry, mass_style);
+            spring_render = givr::createRenderable(spring_geometry, spring_style);
+        }
 
-		void ChainPendulumModel::reset() {
-			//As you add quantities to the primatives, they should be set here.
+        void ChainPendulumModel::reset() {
+            //As you add quantities to the primatives, they should be set here.
             for (int i = 0; i < masses.size(); ++i) {
-                masses[i].p = {(float)i * 5.f,0.f,0.f };
+                masses[i].p = {(float) i * 5.f, 0.f, 0.f};
                 masses[i].v = {0.f, 0.f, 0.f};
             }
-			//The model should start non-vertical so we can see swaying action
-		}
+            //The model should start non-vertical so we can see swaying action
+        }
 
-		void ChainPendulumModel::step(float dt) {
-			//TODO: Complete the Chain Pendulum step
+        void ChainPendulumModel::step(float dt) {
+            //TODO: Complete the Chain Pendulum step
             //Calculating the forces
             g = glm::vec3(0.f, -1.f * imgui_panel::gravity, 0.f);
 
@@ -137,42 +133,41 @@ namespace simulation {
             for (int i = 0; i < masses.size(); ++i) {
                 masses[i].integrate(dt);
             }
-		}
+        }
 
-		void ChainPendulumModel::render(const ModelViewContext& view) {
+        void ChainPendulumModel::render(const ModelViewContext &view) {
 
-			//Add Mass render
-			for (const primatives::Mass& mass : masses) {
-				givr::addInstance(mass_render, glm::translate(glm::mat4(1.f), mass.p));
-			}
+            //Add Mass render
+            for (const primatives::Mass &mass: masses) {
+                givr::addInstance(mass_render, glm::translate(glm::mat4(1.f), mass.p));
+            }
 
-			//Clear and add springs
-			spring_geometry.segments().clear();
-			for (const primatives::Spring& spring : springs) {
-				spring_geometry.push_back(
-					givr::geometry::Line(
-						givr::geometry::Point1(spring.mass_a->p),
-						givr::geometry::Point2(spring.mass_b->p)
-					)
-				);
-			}
-			givr::updateRenderable(spring_geometry, spring_style, spring_render);
+            //Clear and add springs
+            spring_geometry.segments().clear();
+            for (const primatives::Spring &spring: springs) {
+                spring_geometry.push_back(
+                        givr::geometry::Line(
+                                givr::geometry::Point1(spring.mass_a->p),
+                                givr::geometry::Point2(spring.mass_b->p)
+                        )
+                );
+            }
+            givr::updateRenderable(spring_geometry, spring_style, spring_render);
 
-			//Render
-			givr::style::draw(mass_render, view);
-			givr::style::draw(spring_render, view);
-		}
+            //Render
+            givr::style::draw(mass_render, view);
+            givr::style::draw(spring_render, view);
+        }
 
         //////////////////////////////////////////////////
         ////           CubeOfJellyModel             ////----------------------------------------------------------
         //////////////////////////////////////////////////
 
         CubeOfJellyModel::CubeOfJellyModel()
-                : mass_geometry(givr::geometry::Radius(0.2f))
-                , mass_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f))
-                , spring_geometry()
-                , spring_style(givr::style::Colour(1.f, 0.f, 1.f))
-        {
+                : mass_geometry(givr::geometry::Radius(0.2f)),
+                  mass_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f)),
+                  spring_geometry(), spring_style(givr::style::Colour(1.f, 0.f, 1.f)), triangle_geometry(),
+                  triangle_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f)) {
 
             //Initializing masses and springs
             int number_of_springs = 0;
@@ -197,16 +192,18 @@ namespace simulation {
                         masses[x][y][z].p = glm::vec3(x, y, z) * min_mass_distance + offset;
                         // Adding torque to the jelly
                         glm::vec3 vector = masses[x][y][z].p - center_of_jelly;
-                        masses[x][y][z].v = glm::cross(glm::normalize(vector), glm::normalize(glm::vec3(1.f, 0.f, 1.f))) * torque_intensity;
+                        masses[x][y][z].v =
+                                glm::cross(glm::normalize(vector), glm::normalize(glm::vec3(1.f, 0.f, 1.f))) *
+                                torque_intensity;
                         for (int nx = 0; nx < cube_size; ++nx) {
                             for (int ny = 0; ny < cube_size; ++ny) {
                                 for (int nz = 0; nz < cube_size; ++nz) {
                                     if (!(nx == x && ny == y && nz == z) && !processed_masses[nx][ny][nz]) {
-                                        float distance = sqrtf((float)((nx - x)*(nx - x) + (ny - y)*(ny - y) + (nz - z)*(nz - z)));
+                                        float distance = sqrtf((float) ((nx - x) * (nx - x) + (ny - y) * (ny - y) +
+                                                                        (nz - z) * (nz - z)));
                                         if (distance < min_mass_distance * 2.f ||
                                             (distance >= min_mass_distance * (cube_size - 1) - 0.01f &&
-                                            distance < min_mass_distance * (cube_size - 1) + 0.01f))
-                                        {
+                                             distance < min_mass_distance * (cube_size - 1) + 0.01f)) {
                                             number_of_springs++;
                                         }
                                     }
@@ -236,11 +233,11 @@ namespace simulation {
                             for (int ny = 0; ny < cube_size; ++ny) {
                                 for (int nz = 0; nz < cube_size; ++nz) {
                                     if (!(nx == x && ny == y && nz == z) && !processed_masses[nx][ny][nz]) {
-                                        float distance = sqrtf((float)((nx - x)*(nx - x) + (ny - y)*(ny - y) + (nz - z)*(nz - z)));
+                                        float distance = sqrtf((float) ((nx - x) * (nx - x) + (ny - y) * (ny - y) +
+                                                                        (nz - z) * (nz - z)));
                                         if (distance < min_mass_distance * 2.f ||
                                             (distance >= min_mass_distance * (cube_size - 1) - 0.01f &&
-                                             distance < min_mass_distance * (cube_size - 1) + 0.01f))
-                                        {
+                                             distance < min_mass_distance * (cube_size - 1) + 0.01f)) {
                                             springs[spring_index].mass_a = &masses[x][y][z];
                                             springs[spring_index].mass_b = &masses[nx][ny][nz];
                                             // Set spring constants, rest length, etc. as needed
@@ -258,6 +255,71 @@ namespace simulation {
                 }
             }
 
+            triangle_render = givr::createRenderable(triangle_geometry, triangle_style);
+
+            faces.resize((cube_size - 1) * (cube_size - 1) * 2 * 6);
+            int face_index = 0;
+            for (int i = 0; i < 6; ++i) {
+                for (int j = 0; j < cube_size - 1; ++j) {
+                    for (int k = 0; k < cube_size - 1; ++k) {
+                        if (i == 0) {
+                            faces[face_index].mass_a = &masses[0][j][k];
+                            faces[face_index].mass_b = &masses[0][j + 1][k];
+                            faces[face_index].mass_c = &masses[0][j][k + 1];
+                            face_index++;
+                            faces[face_index].mass_a = &masses[0][j + 1][k + 1];
+                            faces[face_index].mass_b = &masses[0][j][k + 1];
+                            faces[face_index].mass_c = &masses[0][j + 1][k];
+                            face_index++;
+                        } else if (i == 1) {
+                            faces[face_index].mass_a = &masses[cube_size - 1][j][k];
+                            faces[face_index].mass_b = &masses[cube_size - 1][j + 1][k];
+                            faces[face_index].mass_c = &masses[cube_size - 1][j][k + 1];
+                            face_index++;
+                            faces[face_index].mass_a = &masses[cube_size - 1][j + 1][k + 1];
+                            faces[face_index].mass_b = &masses[cube_size - 1][j][k + 1];
+                            faces[face_index].mass_c = &masses[cube_size - 1][j + 1][k];
+                            face_index++;
+                        } else if (i == 2) {
+                            faces[face_index].mass_a = &masses[j][0][k];
+                            faces[face_index].mass_b = &masses[j + 1][0][k];
+                            faces[face_index].mass_c = &masses[j][0][k + 1];
+                            face_index++;
+                            faces[face_index].mass_a = &masses[j + 1][0][k + 1];
+                            faces[face_index].mass_b = &masses[j][0][k + 1];
+                            faces[face_index].mass_c = &masses[j + 1][0][k];
+                            face_index++;
+                        } else if (i == 3) {
+                            faces[face_index].mass_a = &masses[j][cube_size - 1][k];
+                            faces[face_index].mass_b = &masses[j + 1][cube_size - 1][k];
+                            faces[face_index].mass_c = &masses[j][cube_size - 1][k + 1];
+                            face_index++;
+                            faces[face_index].mass_a = &masses[j + 1][cube_size - 1][k + 1];
+                            faces[face_index].mass_b = &masses[j][cube_size - 1][k + 1];
+                            faces[face_index].mass_c = &masses[j + 1][cube_size - 1][k];
+                            face_index++;
+                        } else if (i == 4) {
+                            faces[face_index].mass_a = &masses[j][k][0];
+                            faces[face_index].mass_b = &masses[j + 1][k][0];
+                            faces[face_index].mass_c = &masses[j][k + 1][0];
+                            face_index++;
+                            faces[face_index].mass_a = &masses[j + 1][k + 1][0];
+                            faces[face_index].mass_b = &masses[j][k + 1][0];
+                            faces[face_index].mass_c = &masses[j + 1][k][0];
+                            face_index++;
+                        } else if (i == 5) {
+                            faces[face_index].mass_a = &masses[j][k][cube_size - 1];
+                            faces[face_index].mass_b = &masses[j + 1][k][cube_size - 1];
+                            faces[face_index].mass_c = &masses[j][k + 1][cube_size - 1];
+                            face_index++;
+                            faces[face_index].mass_a = &masses[j + 1][k + 1][cube_size - 1];
+                            faces[face_index].mass_b = &masses[j][k + 1][cube_size - 1];
+                            faces[face_index].mass_c = &masses[j + 1][k][cube_size - 1];
+                            face_index++;
+                        }
+                    }
+                }
+            }
 
             //Reset Dynamic elements
             reset();
@@ -274,7 +336,9 @@ namespace simulation {
                     for (int z = 0; z < masses[x][y].size(); ++z) {
                         masses[x][y][z].p = glm::vec3(x, y, z) * min_mass_distance + offset;
                         glm::vec3 vector = masses[x][y][z].p - center_of_jelly;
-                        masses[x][y][z].v = glm::cross(glm::normalize(vector), glm::normalize(glm::vec3(1.f, 0.f, 1.f))) * torque_intensity;
+                        masses[x][y][z].v =
+                                glm::cross(glm::normalize(vector), glm::normalize(glm::vec3(1.f, 0.f, 1.f))) *
+                                torque_intensity;
                     }
                 }
             }
@@ -320,33 +384,46 @@ namespace simulation {
             }
         }
 
-        void CubeOfJellyModel::render(const ModelViewContext& view) {
+        void CubeOfJellyModel::render(const ModelViewContext &view) {
 
             //Add Mass render
-            for (const auto& layer : masses) {
-                for (const auto& row : layer) {
-                    for (const primatives::Mass& mass : row) {
-                        givr::addInstance(mass_render, glm::translate(glm::mat4(1.f), mass.p));
-                    }
-                }
-            }
+//            for (const auto &layer: masses) {
+//                for (const auto &row: layer) {
+//                    for (const primatives::Mass &mass: row) {
+//                        givr::addInstance(mass_render, glm::translate(glm::mat4(1.f), mass.p));
+//                    }
+//                }
+//            }
+//
+//
+//            //Clear and add springs
+//            spring_geometry.segments().clear();
+//            for (const primatives::Spring &spring: springs) {
+//                spring_geometry.push_back(
+//                        givr::geometry::Line(
+//                                givr::geometry::Point1(spring.mass_a->p),
+//                                givr::geometry::Point2(spring.mass_b->p)
+//                        )
+//                );
+//            }
+//            givr::updateRenderable(spring_geometry, spring_style, spring_render);
+//
+//            //Render
+//            givr::style::draw(mass_render, view);
+//            givr::style::draw(spring_render, view);
+            triangle_geometry.triangles().clear();
 
-
-            //Clear and add springs
-            spring_geometry.segments().clear();
-            for (const primatives::Spring& spring : springs) {
-                spring_geometry.push_back(
-                        givr::geometry::Line(
-                                givr::geometry::Point1(spring.mass_a->p),
-                                givr::geometry::Point2(spring.mass_b->p)
-                        )
+            for (auto face: faces) {
+                triangle_geometry.push_back(
+                        givr::geometry::Triangle(givr::geometry::Point1(face.mass_a->p),
+                                                 givr::geometry::Point2(face.mass_b->p),
+                                                 givr::geometry::Point3(face.mass_c->p))
                 );
             }
-            givr::updateRenderable(spring_geometry, spring_style, spring_render);
 
-            //Render
-            givr::style::draw(mass_render, view);
-            givr::style::draw(spring_render, view);
+            givr::updateRenderable(triangle_geometry, triangle_style, triangle_render);
+
+            givr::style::draw(triangle_render, view);
         }
 
         //////////////////////////////////////////////////
@@ -354,13 +431,10 @@ namespace simulation {
         //////////////////////////////////////////////////
 
         HangingClothModel::HangingClothModel()
-                : mass_geometry(givr::geometry::Radius(0.2f))
-                , mass_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f))
-                , spring_geometry()
-                , spring_style(givr::style::Colour(1.f, 0.f, 1.f))
-                , triangle_geometry()
-                , triangle_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f))
-        {
+                : mass_geometry(givr::geometry::Radius(0.2f)),
+                  mass_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f)),
+                  spring_geometry(), spring_style(givr::style::Colour(1.f, 0.f, 1.f)), triangle_geometry(),
+                  triangle_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f)) {
 
             //Initializing masses and springs
             int number_of_springs;
@@ -389,8 +463,7 @@ namespace simulation {
                                 ya = y;
                                 xb = x;
                                 yb = y + 1;
-                            }
-                            else {
+                            } else {
                                 xa = x;
                                 ya = y;
                                 xb = x + dx;
@@ -399,7 +472,8 @@ namespace simulation {
                             if (xa <= width && xb <= width && ya <= height && yb <= height) {
                                 springs[spring_index].mass_a = &masses[xa][ya];
                                 springs[spring_index].mass_b = &masses[xb][yb];
-                                springs[spring_index].rest_l = glm::distance(springs[spring_index].mass_a->p, springs[spring_index].mass_b->p);
+                                springs[spring_index].rest_l = glm::distance(springs[spring_index].mass_a->p,
+                                                                             springs[spring_index].mass_b->p);
                                 springs[spring_index].k_s = k_s;
                                 springs[spring_index].k_d = k_d;
 //                                std::cout << xa << ", " << ya << " -> " << xb << ", " << yb << ": " << springs[spring_index].rest_l << "\n";
@@ -482,7 +556,7 @@ namespace simulation {
             return glm::normalize(glm::cross(face.mass_b->p - face.mass_a->p, face.mass_c->p - face.mass_a->p));
         }
 
-        void HangingClothModel::render(const ModelViewContext& view) {
+        void HangingClothModel::render(const ModelViewContext &view) {
 //            for (const primatives::Face& face : faces) {
 //                triangle_geometry = givr::geometry::Triangle(
 //                        givr::geometry::Point1(face.mass_a->p),
@@ -491,16 +565,16 @@ namespace simulation {
 //                );
 
 
-                // Update the renderable with the new triangle geometry
+            // Update the renderable with the new triangle geometry
 //                givr::updateRenderable(triangle_geometry, triangle_style, triangle_render);
 
-                // Render the triangle
+            // Render the triangle
 //                givr::style::draw(triangle_render, view);
 //            }
 
             //Add Mass render
-            for (const auto& row : masses) {
-                for (const auto& mass : row) {
+            for (const auto &row: masses) {
+                for (const auto &mass: row) {
                     givr::addInstance(mass_render, glm::translate(glm::mat4(1.f), mass.p));
                 }
             }
@@ -536,5 +610,5 @@ namespace simulation {
 //            givr::style::draw(spring_render, view);
             givr::style::draw(triangle_render, view);
         }
-	} // namespace models
+    } // namespace models
 } // namespace simulation

@@ -156,8 +156,9 @@ namespace simulation {
             //Simulation Constants (you can re-assign values here from imgui)
             glm::vec3 g = { 0.f, -9.81f, 0.f };
             glm::vec3 offset = { 0.f,  10.f, 0.f };
-            int cube_size = 4;
+            int cube_size = 6;
             float min_mass_distance = 1.f, torque_intensity = 15.f;
+            std::vector<primatives::Face> faces;
 
         private:
 
@@ -166,6 +167,10 @@ namespace simulation {
             std::vector<primatives::Spring> springs;
 
             //Render
+            givr::geometry::TriangleSoup triangle_geometry;
+            givr::style::Phong triangle_style;
+            givr::RenderContext<givr::geometry::TriangleSoup, givr::style::Phong> triangle_render;
+
             givr::geometry::Sphere mass_geometry;
             givr::style::Phong mass_style;
             givr::InstancedRenderContext<givr::geometry::Sphere, givr::style::Phong> mass_render;
