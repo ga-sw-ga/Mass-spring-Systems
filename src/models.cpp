@@ -167,7 +167,13 @@ namespace simulation {
                 : mass_geometry(givr::geometry::Radius(0.2f)),
                   mass_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f)),
                   spring_geometry(), spring_style(givr::style::Colour(1.f, 0.f, 1.f)), triangle_geometry(),
-                  triangle_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f)) {
+                  triangle_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f), givr::style::AmbientFactor(0.3f)),
+                  ground_geometry(givr::geometry::Point1(glm::vec3(-100.f, ground_height, -100.f)),
+                                  givr::geometry::Point2(glm::vec3(-100.f, ground_height, 100.f)),
+                                  givr::geometry::Point3(glm::vec3(100.f, ground_height, 100.f)),
+                                  givr::geometry::Point4(glm::vec3(100.f, ground_height, -100.f))),
+                  ground_style(givr::style::Colour(0.25f, 0.25f, 1.f), givr::style::LightPosition(0.f, 100.f, 0.f))
+                  {
 
             //Initializing masses and springs
             int number_of_springs = 0;
@@ -327,6 +333,7 @@ namespace simulation {
             // Render
             mass_render = givr::createInstancedRenderable(mass_geometry, mass_style);
             spring_render = givr::createRenderable(spring_geometry, spring_style);
+            ground_render = givr::createRenderable(ground_geometry, ground_style);
         }
 
         void CubeOfJellyModel::reset() {
@@ -337,7 +344,7 @@ namespace simulation {
                         masses[x][y][z].p = glm::vec3(x, y, z) * min_mass_distance + offset;
                         glm::vec3 vector = masses[x][y][z].p - center_of_jelly;
                         masses[x][y][z].v =
-                                glm::cross(glm::normalize(vector), glm::normalize(glm::vec3(1.f, 0.f, 1.f))) *
+                                glm::cross(glm::normalize(vector), glm::normalize(glm::vec3(1.f, 0.7f, 0.5f))) *
                                 torque_intensity;
                     }
                 }
@@ -361,7 +368,7 @@ namespace simulation {
             }
 
             // Handling collisions
-            float ground_height = -1.5f, ground_k_s = 100000.f, ground_k_d = 0.4f;
+            float ground_k_s = 100000.f, ground_k_d = 0.4f;
             for (int x = 0; x < masses.size(); ++x) {
                 for (int y = 0; y < masses[x].size(); ++y) {
                     for (int z = 0; z < masses[x][y].size(); ++z) {
@@ -424,6 +431,7 @@ namespace simulation {
             givr::updateRenderable(triangle_geometry, triangle_style, triangle_render);
 
             givr::style::draw(triangle_render, view);
+            givr::style::draw(ground_render, view);
         }
 
         //////////////////////////////////////////////////
@@ -433,8 +441,10 @@ namespace simulation {
         HangingClothModel::HangingClothModel()
                 : mass_geometry(givr::geometry::Radius(0.2f)),
                   mass_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f)),
-                  spring_geometry(), spring_style(givr::style::Colour(1.f, 0.f, 1.f)), triangle_geometry(),
-                  triangle_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f)) {
+                  spring_geometry(), spring_style(givr::style::Colour(1.f, 0.f, 1.f)),
+                  triangle_geometry(),
+                  triangle_style(givr::style::Colour(1.f, 0.f, 1.f), givr::style::LightPosition(100.f, 100.f, 100.f))
+                  {
 
             //Initializing masses and springs
             int number_of_springs;
@@ -510,6 +520,7 @@ namespace simulation {
             for (int x = 0; x <= width; ++x) {
                 for (int y = 0; y <= height; ++y) {
                     masses[x][y].p = glm::vec3((width * -0.5f) + x, 0.f, (height * -0.5f) + y);
+                    masses[x][y].v = glm::vec3(0.f);
                 }
             }
         }
