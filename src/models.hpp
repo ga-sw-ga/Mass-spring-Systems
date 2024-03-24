@@ -15,12 +15,11 @@ namespace simulation {
 		//Mass points used in all simulations
 		struct Mass {
 			bool fixed = false;
+            bool air_resistance = false;
 			glm::vec3 p = glm::vec3(0.f);
 			glm::vec3 v = glm::vec3(0.f);
             glm::vec3 f = glm::vec3(0.f);
             float m = 1.f;
-			//TO-DO: Modify this class to include certain desired quantities (mass, force, ...)
-			//May even add functions! Such as integration ...
 
             // Integration function
             void integrate(float dt) {
@@ -50,8 +49,6 @@ namespace simulation {
             float rest_l = 0.f;
             float k_s = 0.f;
             float k_d = 0.f;
-			//TO-DO: Modify this class to include certain desired quantities (spring constants, rest length, ...)
-			//May even add functions! Such as length, force, ...
 
             // Function to calculate spring length
             float length() const {
@@ -68,6 +65,7 @@ namespace simulation {
                 return force - damping_force;
             }
 
+            // Function to calculate spring force (applied on mass b)
             glm::vec3 force_b() const {
                 return force_a() * -1.f;
             }
@@ -102,6 +100,7 @@ namespace simulation {
 
 			//Simulation Constants (you can re-assign values here from imgui)
 			glm::vec3 g = { 0.f, -9.81f, 0.f };
+            float c_d = 0.05f;
 
 		private:
 			//Simulation Parts
@@ -129,6 +128,7 @@ namespace simulation {
 
 			//Simulation Constants (you can re-assign values here from imgui)
 			glm::vec3 g = { 0.f, -9.81f, 0.f };
+            float c_d = 0.005f;
 
 		private:
 
@@ -155,8 +155,9 @@ namespace simulation {
 
             //Simulation Constants (you can re-assign values here from imgui)
             glm::vec3 g = { 0.f, -9.81f, 0.f };
+            float c_d = 0.005f;
             glm::vec3 offset = { 0.f,  10.f, 0.f };
-            int cube_size = 6;
+            int cube_width = 7, cube_height = 6, cube_depth = 5;
             float min_mass_distance = 1.f, torque_intensity = 15.f, ground_height = -1.5f;
             std::vector<primatives::Face> faces;
 
@@ -174,18 +175,7 @@ namespace simulation {
             givr::geometry::Quad ground_geometry;
             givr::style::Phong ground_style;
             givr::RenderContext<givr::geometry::Quad, givr::style::Phong> ground_render;
-
-            givr::geometry::Sphere mass_geometry;
-            givr::style::Phong mass_style;
-            givr::InstancedRenderContext<givr::geometry::Sphere, givr::style::Phong> mass_render;
-
-            givr::geometry::MultiLine spring_geometry;
-            givr::style::LineStyle spring_style;
-            givr::RenderContext<givr::geometry::MultiLine, givr::style::LineStyle> spring_render;
         };
-		// TO-DO: Fully implements the last two using the scheme provided above
-		//class CubeOfJellyModel : public GenericModel {...}; //should be at least 4 in each direction
-		//class HangingClothModel : public GenericModel {...}; //should be at least 8 in each direction
 
         class HangingClothModel : public GenericModel {
         public:
@@ -196,7 +186,8 @@ namespace simulation {
 
             //Simulation Constants (you can re-assign values here from imgui)
             glm::vec3 g = { 0.f, -9.81f, 0.f };
-            int width = 24, height = 36;
+            float c_d = 0.0025f;
+            int width = 30, height = 40;
             float min_mass_distance = 1.f;
             std::vector<primatives::Face> faces;
 
@@ -210,18 +201,6 @@ namespace simulation {
             givr::geometry::TriangleSoup triangle_geometry;
             givr::style::Phong triangle_style;
             givr::RenderContext<givr::geometry::TriangleSoup, givr::style::Phong> triangle_render;
-
-            givr::geometry::Sphere mass_geometry;
-            givr::style::Phong mass_style;
-            givr::InstancedRenderContext<givr::geometry::Sphere, givr::style::Phong> mass_render;
-
-            givr::geometry::MultiLine spring_geometry;
-            givr::style::LineStyle spring_style;
-            givr::RenderContext<givr::geometry::MultiLine, givr::style::LineStyle> spring_render;
         };
-        // TO-DO: Fully implements the last two using the scheme provided above
-        //class CubeOfJellyModel : public GenericModel {...}; //should be at least 4 in each direction
-        //class HangingClothModel : public GenericModel {...}; //should be at least 8 in each direction
-
     } // namespace models
 } // namespace simulation
